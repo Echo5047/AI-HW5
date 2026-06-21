@@ -229,6 +229,20 @@ class ConditionalUNet(nn.Module):
         # Emperically, the two embeddings should be concatenated channel-wise to yield better control.
         #########################################################
         # Your code here.
+        timestep_emb = self.pe(t)
+        if labels is None:
+            label_emb = torch.zeros(
+                n,
+                self.label_embedding.embedding_dim,
+                device=self.device,
+                dtype=timestep_emb.dtype,
+            )
+        else:
+            labels = labels.to(self.device).long()
+            if len(labels.shape) > 1:
+                labels = labels.squeeze(-1)
+            label_emb = self.label_embedding(labels)
+        emb = torch.cat((timestep_emb, label_emb), dim=1)
         #########################################################
         #                     End of TODO                       #
         #########################################################

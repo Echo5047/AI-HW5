@@ -47,6 +47,10 @@ class DDPM:
         # Think about the case when noise is not None.
         #########################################################
         # Your code here.
+        if noise is None:
+            eps = torch.randn_like(x_0)
+        else:
+            eps = noise.to(device=x_0.device, dtype=x_0.dtype)
         #########################################################
         #                     End of TODO                       #
         #########################################################
