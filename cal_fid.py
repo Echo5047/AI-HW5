@@ -9,6 +9,22 @@ import numpy as np
 
 from eval.mnistinception import MnistInceptionV3
 
+def _sqrtm(matrix):
+    """Compute a matrix square root across SciPy versions.
+
+    Older SciPy releases accepted ``disp=False`` and returned
+    ``(sqrt_matrix, error_estimate)``. Newer releases removed that keyword and
+    return only the square-root matrix. This wrapper keeps the FID calculation
+    independent of the installed SciPy version.
+    """
+    try:
+        result = sqrtm(matrix, disp=False)
+    except TypeError:
+        result = sqrtm(matrix)
+    if isinstance(result, tuple):
+        return result[0]
+    return result
+
 def _calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     """Numpy implementation of the Frechet Distance.
     The Frechet distance between two multivariate Gaussians X_1 ~ N(mu_1, C_1)
@@ -42,13 +58,13 @@ def _calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     diff = mu1 - mu2
 
     # Product might be almost singular
-    covmean, _ = sqrtm(sigma1.dot(sigma2), disp=False)
+    covmean = _sqrtm(sigma1.dot(sigma2))
     if not np.isfinite(covmean).all():
         msg = ('fid calculation produces singular product; '
                'adding %s to diagonal of cov estimates') % eps
         print(msg)
         offset = np.eye(sigma1.shape[0]) * eps
-        covmean = sqrtm((sigma1 + offset).dot(sigma2 + offset))
+        covmean = _sqrtm((sigma1 + offset).dot(sigma2 + offset))
 
     # Numerical error might give slight imaginary component
     if np.iscomplexobj(covmean):

@@ -66,6 +66,9 @@ def generate_image(args):
         # saturation, and artifacts in your report.
         #########################################################
         # Your code here.
+        noise_pred = noise_pred_uncond + args.guidance_scale * (
+            noise_pred_text - noise_pred_uncond
+        )
         #########################################################
         #                     End of TODO                       #
         #########################################################
